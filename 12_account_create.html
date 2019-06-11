@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+<title>012_account_create_sample</title>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://s3-ap-northeast-1.amazonaws.com/xembook.net/nem2-sdk/nem2-sdk-0.11.6.js"></script><!-- Catapult Cow -->
+<script>
+
+$(function() {
+
+	const nem = require("/home/ec2-user/node_modules/nem2-sdk");
+
+	const account1 = nem.Account.generateNewAccount(nem.NetworkType.MIJIN_TEST);
+	const privateKey = account1.privateKey;
+	const PASSWORD = 'this wallet is created by nem taka nobu who is known by xembook which is useful tool when you want to know the price of xem which you have.';
+
+	$("#account1_prikey").text(account1.privateKey);
+	$("#account1_address").text(account1.address.pretty());
+
+	const account2 = nem.Account.createFromPrivateKey(privateKey, nem.NetworkType.MIJIN_TEST);
+	$("#account2_prikey").text(account2.privateKey);
+	$("#account2_address").text(account2.address.pretty());
+
+	const password = new nem.Password(PASSWORD);
+	const wallet3 = nem.SimpleWallet.create('wallet-name', password, nem.NetworkType.MIJIN_TEST);
+	const account3 = wallet3.open(password);
+	$("#account3_prikey").text(account3.privateKey);
+	$("#account3_address").text(account3.address.pretty());
+
+	const password4 = new nem.Password(PASSWORD);
+	const wallet4 = nem.SimpleWallet.createFromPrivateKey('wallet-name', password4, privateKey, nem.NetworkType.MIJIN_TEST);
+	const account4 = wallet4.open(password4);
+	$("#account4_prikey").text(account4.privateKey);
+	$("#account4_address").text(account4.address.pretty());
+
+});
+
+</script>
+</head>
+<body>
+	<div class="container">
+
+		<h1>012_account_create_sample</h1>
+		<h3>Account1：ランダムに作成</h1>
+		<div id="items1-ctrl">
+			<ul>
+				<li>[ADDRESS]：<span id="account1_address"></span></li>
+				<li>[PRIVATE_KEY]：<span id="account1_prikey"></span></li>
+			</ul>
+		</div>
+
+		<h3>Account2：秘密鍵を指定してアカウント作成(Account1の秘密鍵を使用)</h1>
+		<div id="items2-ctrl">
+			<ul>
+				<li>[ADDRESS]：<span id="account2_address"></span></li>
+				<li>[PRIVATE_KEY]：<span id="account2_prikey"></span></li>
+			</ul>
+		</div>
+
+		<h3>Wallet3：パスワードを指定して、ランダムにウォレットを作成</h1>
+		<div id="items3-ctrl">
+			<ul>
+				<li>[ADDRESS]：<span id="account3_address"></span></li>
+				<li>[PRIVATE_KEY]：<span id="account3_prikey"></span></li>
+			</ul>
+		</div>
+
+		<h3>Wallet4：秘密鍵とパスワードを指定して、ウォレットを作成(Account1の秘密鍵を使用)</h1>
+		<div id="items4-ctrl">
+			<ul>
+				<li>[ADDRESS]：<span id="account4_address"></span></li>
+				<li>[PRIVATE_KEY]：<span id="account4_prikey"></span></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
