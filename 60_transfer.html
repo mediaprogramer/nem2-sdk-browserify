@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+<title>060_transfer_sample</title>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+<script src="https://s3-ap-northeast-1.amazonaws.com/xembook.net/nem2-sdk/nem2-sdk-0.13.0.js"></script>
+<script>
+$(function() {
+//const NODE = "http://{IPアドレス}:3000";
+//const GENERATION_HASH = "{ジェネレーションハッシュ}";
+//const PRIKEY = "{秘密鍵}";
+
+const NODE = "http://18.182.13.103:3000";//
+const GENERATION_HASH = "3125DF8F8C726660526886BAD6531A51A520845D984BE47943F9F844885CC7CA";
+const PRIKEY = "CD52E4CA8F6EC1ADBE4BEF392BAD666179A495F87CBC15176F30C8A82EBA90D6";
+const RECIPIENT = "SCA7ZS2B7DEEBGU3THSILYHCRUR32YYE55ZBLYA2";
+const nem = require("/home/ec2-user/node_modules/nem2-sdk");
+const account = nem.Account.createFromPrivateKey(PRIKEY,nem.NetworkType.MIJIN_TEST);
+const recipientAddress = nem.Address.createFromRawAddress(RECIPIENT);
+
+$('#signer_address').text(account.address.address);
+$('#recipient_address').text(RECIPIENT);
+$('button').click(function(){
+
+    const transferTransaction = nem.TransferTransaction.create(
+        nem.Deadline.create(),
+        recipientAddress,
+        [nem.NetworkCurrencyMosaic.createRelative(0)],
+        nem.PlainMessage.create('Hello Catapult!'),
+        nem.NetworkType.MIJIN_TEST);
+
+    const signedTransaction = account.sign(transferTransaction,GENERATION_HASH);
+    console.log(signedTransaction);
+    const transactionHttp = new nem.TransactionHttp(NODE);
+    transactionHttp
+        .announce(signedTransaction)
+        .subscribe(x =>{ 
+            console.log(x);
+            $('#items2-ctrl ul').append('<li><a target="_blank" href="' + NODE + '/transaction/' + signedTransaction.hash + '/status">' + signedTransaction.hash + '</a></li>');
+            $('#items3-ctrl ul').append('<li><a target="_blank" href="' + NODE + '/transaction/' + signedTransaction.hash + '">' + signedTransaction.hash + '</a></li>');
+        }, 
+        err => console.error(err)
+        );
+    });
+})
+</script>
+</head>
+<body>
+	<h1>060_transfer</h1>
+	<div id="items-ctrl">
+		<ul>
+		<li>[FROM]：<span id="signer_address"></span></li>
+		<li>[TO]：<span id="recipient_address"></span></li>
+		</ul>
+	</div>
+	<div id="btn-ctrl"><button>送信</button></div>
+	<h3>state確認</h1><div id="items2-ctrl"><ul></ul></div>
+	<h3>confirmed確認</h1><div id="items3-ctrl"><ul></ul></div>
+</body>
+</html>
