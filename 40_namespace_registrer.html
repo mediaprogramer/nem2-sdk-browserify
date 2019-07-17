@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+<title>010_account_sample</title>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+<script src="https://s3-ap-northeast-1.amazonaws.com/xembook.net/nem2-sdk/nem2-sdk-0.13.0.js"></script>
+<script>
+
+//CD52E4CA8F6EC1ADBE4BEF392BAD666179A495F87CBC15176F30C8A82EBA90D6
+//SADW6WXZVIUWIJ6RAWFSM4F4SJRUBRVOARXXIFSH
+//1BCA1267C0A13A6D78219463056B711683A4676A4C7F8883E64F7EC5291E6E51
+
+//289D5C9F9CF2FA65DB8FAE30F0E1A4AAEFCFA62A1E17ABAA095C6796AE4170C6
+//SCAZJP2UPDEMZJZMY3CCUJQGXY7JMDVJ7CRG6ROT
+//FF6E61F2A0440FB09CA7A530C0C64A275ADA3A13F60D1EC916D7F1543D7F0574
+$(function() {
+
+	const NODE = "http://13.114.31.172:3000";//
+	const nem = require("/home/ec2-user/node_modules/nem2-sdk");
+	const GENERATION_HASH = "3125DF8F8C726660526886BAD6531A51A520845D984BE47943F9F844885CC7CA";
+
+	const namespaceName = "xembook"; //Replace with an unique namespace name
+	const registerNamespaceTransaction = nem.RegisterNamespaceTransaction.createRootNamespace(
+		nem.Deadline.create(),
+		namespaceName,
+		nem.UInt64.fromUint(1),
+		nem.NetworkType.MIJIN_TEST);
+
+	const privateKey = "CD52E4CA8F6EC1ADBE4BEF392BAD666179A495F87CBC15176F30C8A82EBA90D6";
+	const account = nem.Account.createFromPrivateKey(privateKey, nem.NetworkType.MIJIN_TEST);
+	const signedTransaction = account.sign(registerNamespaceTransaction, GENERATION_HASH);
+	console.log(signedTransaction);
+
+
+	$('#btn1-ctrl').click(function(){
+
+		const transactionHttp = new nem.TransactionHttp(NODE);
+		transactionHttp
+			.announce(signedTransaction)
+			.subscribe(x =>{ 
+				console.log(x);
+				$('#items2-ctrl ul').append('<li><a target="_blank" href="' + NODE + '/transaction/' + signedTransaction.hash + '/status">' + signedTransaction.hash + '</a></li>');
+				$('#items3-ctrl ul').append('<li><a target="_blank" href="' + NODE + '/transaction/' + signedTransaction.hash + '">' + signedTransaction.hash + '</a></li>');
+
+			}, 
+			err => console.error(err)
+			);
+
+	});
+
+	$('#btn2-ctrl').click(function(){
+
+		const namespaceHttp = new nem.NamespaceHttp(NODE);
+		const namespaceId = new nem.NamespaceId(namespaceName);
+
+		namespaceHttp
+		.getNamespace(namespaceId)
+		.subscribe(namespaceInfo => console.log(namespaceInfo), err => console.error(err));
+
+	});
+
+});
+</script>
+</head>
+<body>
+	<h1>040_namespace_register</h1>
+	<div><button id="btn1-ctrl">送信</button></div>
+	<h3>state確認</h1><div id="items2-ctrl"><ul></ul></div>
+	<h3>confirmed確認</h1><div id="items3-ctrl"><ul></ul></div>
+	<div><button id="btn2-ctrl">確認</button></div>
+</body>
+</html>
